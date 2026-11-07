@@ -154,8 +154,13 @@ export const registerNewUser
 };
 
 
-export const logOutUser = (navigate) => (dispatch) => {
-    dispatch({ type:"LOG_OUT" });
+export const logOutUser = (navigate) => async (dispatch) => {
+    try {
+        await api.post("/auth/signout");
+    } catch (e) {
+        console.log(e);
+    }
+    dispatch({ type: "LOG_OUT" });
     dispatch({ type: "CLEAR_CART" });
     localStorage.removeItem("CHECKOUT_ADDRESS");
     localStorage.removeItem("auth");
@@ -163,13 +168,8 @@ export const logOutUser = (navigate) => (dispatch) => {
 };
 
 export const addUpdateUserAddress =
-     (sendData, toast, addressId, setOpenAddressModal) => async (dispatch, getState) => {
-    /*
-    const { user } = getState().auth;
-    await api.post(`/addresses`, sendData, {
-          headers: { Authorization: "Bearer " + user.jwtToken },
-        });
-    */
+     (sendData, toast, addressId, setOpenAddressModal) => async (dispatch) => {
+
     dispatch({ type:"BUTTON_LOADER" });
     try {
         if (!addressId) {
