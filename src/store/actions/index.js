@@ -287,37 +287,30 @@ export const getUserCart = () => async (dispatch, getState) => {
 };
 
 
-export const createStripePaymentSecret 
-    = (sendData) => async (dispatch, getState) => {
-        try {
-            dispatch({ type: "IS_FETCHING" });
-            const { data } = await api.post("/order/stripe-client-secret", sendData);
-            dispatch({ type: "CLIENT_SECRET", payload: data });
-              localStorage.setItem("client-secret", JSON.stringify(data));
-              dispatch({ type: "IS_SUCCESS" });
-        } catch (error) {
-            console.log(error);
-            toast.error(error?.response?.data?.message || "Failed to create client secret");
-        }
+export const createStripePaymentSecret = async (sendData) => {
+    const { data } = await api.post("/order/stripe-client-secret", sendData);
+    return data;
 };
 
-
-export const stripePaymentConfirmation 
-    = (sendData, setErrorMesssage, setLoadng, toast) => async (dispatch, getState) => {
+export const stripePaymentConfirmation
+    = (sendData, setErrorMesssage, setLoadng, toast) => async (dispatch) => {
         try {
-            const response  = await api.post("/order/users/payments/online", sendData);
+            setLoadng(true);
+            const response = await api.post("/order/users/payments/online", sendData);
             if (response.data) {
                 localStorage.removeItem("CHECKOUT_ADDRESS");
                 localStorage.removeItem("cartItems");
                 localStorage.removeItem("client-secret");
-                dispatch({ type: "REMOVE_CLIENT_SECRET_ADDRESS"});
-                dispatch({ type: "CLEAR_CART"});
+                dispatch({ type: "REMOVE_CLIENT_SECRET_ADDRESS" });
+                dispatch({ type: "CLEAR_CART" });
                 toast.success("Order Accepted");
-              } else {
+            } else {
                 setErrorMesssage("Payment Failed. Please try again.");
-              }
+            }
         } catch (error) {
-            setErrorMesssage("Payment Failed. Please try again.");
+            setErrorMesssage(error?.response?.data?.message || "Payment Failed. Please try again.");
+        } finally {
+            setLoadng(false);
         }
 };
 
@@ -583,7 +576,7 @@ export const deleteCategoryDashboardAction =
     const { user } = getState().auth;
     try {
       dispatch({ type: "IS_FETCHING" });
-      const { data } = await api.get(`/auth/sellers?${queryString}`);
+      const { data } = await api.get(`/admin/sellers?${queryString}`);
       dispatch({
         type: "GET_SELLERS",
         payload: data["content"],
@@ -608,11 +601,11 @@ export const addNewDashboardSeller =
   (sendData, toast, reset, setOpen, setLoader) => async (dispatch) => {
     try {
       setLoader(true);
-      await api.post("/auth/signup", sendData);
+      await api.post("/admin/sellers", sendData);
       reset();
       toast.success("Seller registered successfully!");
 
-      await dispatch(getAllSellersDashboard());
+      await dispatch(getAllSellersDashboard(""));
     } catch (err) {
       console.log(err);
       toast.error(

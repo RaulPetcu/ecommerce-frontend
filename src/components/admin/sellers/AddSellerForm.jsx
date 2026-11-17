@@ -20,12 +20,7 @@ const AddSellerForm = ({ setOpen }) => {
   });
 
   const addSellerHandler = (data) => {
-    const sendData = {
-      ...data,
-      role: ["seller"],
-    };
-
-    dispatch(addNewDashboardSeller(sendData, toast, reset, setOpen, setLoader));
+    dispatch(addNewDashboardSeller(data, toast, reset, setOpen, setLoader));
   };
 
   return (
